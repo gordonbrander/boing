@@ -23,20 +23,23 @@ function spring(options) {
 
 function tickSpring(spring) {
   /* Mutates a spring object, updating it to its next state. */
-  // AnchorPos is constant.
   var dampingForce = (-1 * spring.friction) * spring.speed;
   var springForce = (-1 * spring.stiffness) * spring.distance;
   var totalForce = springForce + dampingForce;
   var acceleration = totalForce / spring.mass;
   
   spring.speed += acceleration;
+  // Update distance from 0 (resting).
   spring.distance += spring.speed / 100;
   
   return spring;
 }
 
 function isSpringAtRest(spring) {
-  /* Find out whether a spring is at rest. Returns a boolean. */
+  /* Find out whether a spring is at rest. A spring is at rest when near 0
+  distance at a speed less than 0.2.
+
+  Returns a boolean. */
   return Math.round(spring.distance) === 0 && Math.abs(spring.speed) < 0.2;
 }
 
