@@ -13,32 +13,31 @@ function spring(options) {
 
   Returns an object with all required spring properties. */
   return {
+    distance: options.distance || 0,
     mass: options.mass || 0,
     stiffness: options.stiffness || 0,
     friction: options.friction || 1,
-    speed: options.speed || 0,
-    anchorPos: options.anchorPos || 0,
-    position: options.position || 0    
+    speed: options.speed || 0    
   };
 }
 
 function tickSpring(spring) {
   /* Mutates a spring object, updating it to its next state. */
-  var distance = spring.position - spring.anchorPos;
+  // AnchorPos is constant.
   var dampingForce = (-1 * spring.friction) * spring.speed;
-  var springForce = (-1 * spring.stiffness) * distance;
+  var springForce = (-1 * spring.stiffness) * spring.distance;
   var totalForce = springForce + dampingForce;
   var acceleration = totalForce / spring.mass;
   
   spring.speed += acceleration;
-  spring.position += spring.speed / 100;
+  spring.distance += spring.speed / 100;
   
   return spring;
 }
 
 function isSpringAtRest(spring) {
   /* Find out whether a spring is at rest. Returns a boolean. */
-  return Math.round(spring.position) === spring.anchorPos && Math.abs(spring.speed) < 0.2;
+  return Math.round(spring.distance) === 0 && Math.abs(spring.speed) < 0.2;
 }
 
 /*
