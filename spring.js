@@ -14,7 +14,7 @@ function spring(options) {
   Returns an object with all required spring properties. */
   return {
     distance: options.distance || 0,
-    mass: options.mass || 0,
+    mass: options.mass || 1,
     stiffness: options.stiffness || 0,
     friction: options.friction || 1,
     speed: options.speed || 0    
@@ -35,12 +35,30 @@ function tickSpring(spring) {
   return spring;
 }
 
-function isSpringAtRest(spring) {
+function isSpringResting(spring) {
   /* Find out whether a spring is at rest. A spring is at rest when near 0
   distance at a speed less than 0.2.
 
   Returns a boolean. */
   return Math.round(spring.distance) === 0 && Math.abs(spring.speed) < 0.2;
+}
+
+function animateSpring(spring, callback) {
+  /* Animate a spring from its current state to resting state.
+  Takes a callback which will be called with the spring object over and over
+  and over until the spring is at rest. */
+  spring = Object.create(spring);
+
+  var requestAnimationFrame = window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame;
+
+  function looper() {
+    tickSpring(spring);
+    if(isSpringResting(spring)) return;
+    callback(spring.distance);
+    requestAnimationFrame(looper);
+  }
+
+  looper();
 }
 
 /*
