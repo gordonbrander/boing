@@ -1,0 +1,67 @@
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<!doctype html>
+<html lang="en" class="screen">
+<head>
+  <meta charset="utf-8">
+  <title>Parallax</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    #bar {
+      background: #222;
+      height: 100px;
+      position: relative;
+      width: 320px;
+    }
+    #springy {
+      background: dodgerblue;
+      left: 0;
+      position: absolute;
+      width: 40px;
+      height: 100px;
+    }
+  </style>
+</head>
+<body>
+  <div id="bar">
+    <div id="springy"></div>
+  </div> 
+  <script type="text/javascript" src="../spring.js"></script>
+  <script type="text/javascript">
+    function accumulateSpringPositions(spring) {
+      /*
+      Goal: if I can generate all the numbers for a spring interaction, it should
+      be possible to look at the states, divide by 60 and get back the timing for
+      the states. I can then construct a CSS bezier curve via JavaScript and I have a
+      hardware accelarated animation for a single spring interaction. */
+      spring = Object.create(spring);
+      var positions = [];
+
+      while(!isSpringResting(spring)) {
+        positions.push(tickSpring(spring).position);
+      }
+
+      return positions;
+    }
+
+    var springyEl = document.getElementById('springy');
+
+    var mySpring = spring({
+      distance: (320/2),
+      stiffness: 300,
+      mass: 50,
+      friction: 10
+    });
+
+    animateSpring(mySpring, function (distance) {
+      springyEl.style.left = (((320/2) - 20) - distance) + 'px';
+    });
+  </script>
+</body>
+</html>
