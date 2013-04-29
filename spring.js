@@ -7,6 +7,28 @@ Notes:
 
 */
 
+function dampenedHookeForce(displacement, stiffness, damping, velocity) {
+  // Hooke's Law -- the basic spring force.
+  // <http://en.wikipedia.org/wiki/Hooke%27s_law>
+  //
+  //     F = -kx
+  //
+  // Where:
+  // x is the vector displacement of the end of the spring from its equilibrium,
+  // k is a constant describing the tightness of the spring.
+  var hookeForce = -1 * (stiffness * displacement);
+
+  // Applying friction to Hooke's Law for realistic physics
+  // <http://gafferongames.com/game-physics/spring-physics/>
+  //
+  //     F = -kx - bv
+  //
+  // Where:
+  // b is damping (friction),
+  // v is the relative velocity between the 2 points.
+  return hookeForce - (damping * velocity);
+}
+
 function spring(options) {
   /* Create a new spring object. Override any property with your own options
   object.
@@ -23,10 +45,9 @@ function spring(options) {
 
 function tickSpring(spring) {
   /* Mutates a spring object, updating it to its next state. */
-  var dampingForce = (-1 * spring.friction) * spring.speed;
-  var springForce = (-1 * spring.stiffness) * spring.distance;
-  var totalForce = springForce + dampingForce;
-  var acceleration = totalForce / spring.mass;
+  var force = dampenedHookeForce(spring.distance, spring.stiffness, spring.friction, spring.speed);
+
+  var acceleration = force / spring.mass;
   
   spring.speed += acceleration;
   // Update distance from 0 (resting).
