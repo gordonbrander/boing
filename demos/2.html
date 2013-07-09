@@ -35,13 +35,11 @@
   <script type="text/javascript">
     var springyEl = document.getElementById('springy');
 
-    var points = accumulateCurvePoints((320/2), 0, 50, 700, 10);
-
     function myAnimate(point) {
-      return rule('left', (((320 / 2) - 20) - point) + 'px');
+      return asCssRule('left', (((320 / 2) - 20) - point) + 'px');
     }
 
-    animateSpringViaCss(springyEl, points, myAnimate, ['']);
+    animateSpringViaCss(springyEl, (320/2), 0, 50, 700, 10, myAnimate);
   </script>
 </body>
 </html>

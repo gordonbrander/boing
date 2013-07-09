@@ -103,21 +103,10 @@ var stdPrefixes = [
   ''
 ];
 
-
-function declaration(key, value) {
-  return key + ':' + value + ';';
-}
-
-function rule(key, value, prefixes) {
+function asCssRule(key, value, prefixes) {
   prefixes = prefixes || noPrefix;
   return reduce(prefixes, function reduceRule(string, prefix) {
-    return string + prefix + declaration(key, value);
-  }, '');
-}
-
-function asCssBlock(object) {
-  return reduce(Object.keys(object), function reduceBlock(string, key) {
-    return string + declaration(key, object[key]);
+    return string + prefix + key + ':' + value + ';';
   }, '');
 }
 
@@ -157,12 +146,11 @@ function generateCssKeyframes(points, name, mapper, prefixes) {
 function generateAnimationCss(points, name, duration, mapper, prefixes) {
   var keyframeStatement = generateCssKeyframes(points, name, mapper, prefixes);
 
-  var properties = [
-    rule('animation-duration', duration, prefixes),
-    rule('animation-name', name, prefixes),
-    rule('animation-timing-function', 'linear', prefixes),
-    rule('animation-fill-mode', 'both', prefixes)
-  ].join('');
+  var properties = 
+    asCssRule('animation-duration', duration, prefixes) +
+    asCssRule('animation-name', name, prefixes) +
+    asCssRule('animation-timing-function', 'linear', prefixes) +
+    asCssRule('animation-fill-mode', 'both', prefixes);
 
   var animationStatement = asCssStatement('.' + name, properties);
 
@@ -179,8 +167,12 @@ function appendStyle(headEl, css) {
   return styleEl;
 }
 
-function animateSpringViaCss(el, points, mapper, prefixes, fps) {
+function animateSpringViaCss(el, x, velocity, mass, stiffness, damping, mapper, prefixes, fps) {
   fps = fps || 60;
+  prefixes = prefixes || noPrefix;
+
+  // Accumulate the points of the spring curve
+  var points = accumulateCurvePoints(x, velocity, mass, stiffness, damping);
 
   // Compute the timespan of the animation based on the number of frames we
   // have and the fps we desire.
