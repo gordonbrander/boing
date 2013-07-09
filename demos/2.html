@@ -36,9 +36,14 @@
   <script type="text/javascript">
     var springyEl = document.getElementById('springy');
 
-    animateSpring((320/2), 0, 50, 700, 10, function (x) {
-      springyEl.style.left = (((320/2) - 20) - x) + 'px';
-    });
+    var points = accumulateCurvePoints((320/2), 0, 50, 700, 10);
+
+    function myAnimate(point) {
+      return rule('left', (((320 / 2) - 20) - point) + 'px');
+    }
+
+    animateCurveViaCss(document, springyEl, points, myAnimate, ['-moz-', '']);
   </script>
 </body>
 </html>
+

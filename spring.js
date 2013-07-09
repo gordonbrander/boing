@@ -18,7 +18,7 @@ function id() {
   return Math.random().toString(16).substring(2, 10);
 }
 
-function dampenedHookeForce(displacement, stiffness, damping, velocity) {
+function dampenedHookeForce(displacement, velocity, stiffness, damping) {
   //
   // @TODO look at proper Verlet integration.
   //
@@ -43,56 +43,53 @@ function dampenedHookeForce(displacement, stiffness, damping, velocity) {
   return hookeForce - (damping * velocity);
 }
 
-function spring(options) {
-  /* Create a new spring object. Override any property with your own options
-  object.
-
-  Returns an object with all required spring properties. */
+function particle(x, velocity, mass) {
   return {
-    distance: options.distance || 0,
-    mass: options.mass || 1,
-    stiffness: options.stiffness || 0,
-    friction: options.friction || 1,
-    speed: options.speed || 0    
+    x: x || 0,
+    velocity: velocity || 0,
+    mass: mass || 1
   };
 }
 
-function tickSpring(spring) {
-  /* Mutates a spring object, updating it to its next state.
+function tick(particle, stiffness, damping) {
+  // "Tick" a particle given a spring force.
+  // Mutates the particle object!
+  var force = dampenedHookeForce(
+    particle.x,
+    particle.velocity,
+    stiffness,
+    damping
+  );
 
-  @TODO make integrator a function that recieves the requisit variables and
-  spits out a state.
-  */
-  var force = dampenedHookeForce(spring.distance, spring.stiffness, spring.friction, spring.speed);
+  // Acceleration = force / mass.
+  var acceleration = force / particle.mass;
 
-  var acceleration = force / spring.mass;
+  // Increase velocity by acceleration.
+  particle.velocity += acceleration;
+  // Update distance from resting.
+  particle.x += particle.velocity / 100;
 
-  spring.speed += acceleration;
-  // Update distance from 0 (resting).
-  spring.distance += spring.speed / 100;
-
-  return spring;
+  return particle;
 }
 
-function isSpringResting(spring) {
-  /* Find out whether a spring is at rest. A spring is at rest when near 0
-  distance at a speed less than 0.2.
-
-  Returns a boolean. */
-  return Math.round(spring.distance) === 0 && Math.abs(spring.speed) < 0.2;
+function isParticleResting(particle) {
+  // Find out if a particle is at rest.
+  // Returns a boolean.
+  return Math.round(particle.x) === 0 && Math.abs(particle.velocity) < 0.2;
 }
 
-function accumulateCurvePoints(spring) {
+function accumulateCurvePoints(x, velocity, mass, stiffness, damping) {
   // Accumulate all states of a spring as an array of points.
+  // Returns an array representing x values over time..
 
-  // Create a temporary spring object so we don't mutate the original.
-  spring = Object.create(spring);
+  // Create a temporary particle object.
+  var p = particle(x, velocity, mass);
 
   // Create a points array to accumulate into.
   var points = [];
 
-  while(!isSpringResting(spring)) {
-    points.push(tickSpring(spring).distance);
+  while(!isParticleResting(p)) {
+    points.push(tick(p, stiffness, damping).x);
   }
 
   return points;
@@ -193,18 +190,20 @@ function animateCurveViaCss(document, el, points, mapper, prefixes, fps) {
   }, duration + 1);
 }
 
-function animateSpring(spring, callback) {
-  /* Animate a spring from its current state to resting state.
-  Takes a callback which will be called with the spring object over and over
+function animateSpring(x, velocity, mass, stiffness, damping, callback) {
+  /* Animate a spring force from its current state to resting state.
+  Takes a callback which will be called with the x position over and over
   and over until the spring is at rest. */
-  spring = Object.create(spring);
+
+  // Create a temporary particle object.
+  var p = particle(x, velocity, mass);
 
   var requestAnimationFrame = window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame;
 
   function looper() {
-    tickSpring(spring);
-    if(isSpringResting(spring)) return;
-    callback(spring.distance);
+    tick(p, stiffness, damping);
+    if(isParticleResting(p)) return;
+    callback(p.x);
     requestAnimationFrame(looper);
   }
 
