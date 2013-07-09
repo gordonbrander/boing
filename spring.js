@@ -103,10 +103,21 @@ var stdPrefixes = [
   ''
 ];
 
+
+function declaration(key, value) {
+  return key + ':' + value + ';';
+}
+
 function rule(key, value, prefixes) {
   prefixes = prefixes || noPrefix;
   return reduce(prefixes, function reduceRule(string, prefix) {
-    return string + prefix + key + ':' + value + ';';
+    return string + prefix + declaration(key, value);
+  }, '');
+}
+
+function asCssBlock(object) {
+  return reduce(Object.keys(object), function reduceBlock(string, key) {
+    return string + declaration(key, object[key]);
   }, '');
 }
 
@@ -158,27 +169,31 @@ function generateAnimationCss(points, name, duration, mapper, prefixes) {
   return keyframeStatement + animationStatement;
 }
 
-function animateCurveViaCss(document, el, points, mapper, prefixes, fps) {
-  fps = fps || 60;
+function appendStyle(headEl, css) {
+  // Create a new style element.
+  var styleEl = document.createElement('style');
+  // Assign the text content.
+  styleEl.textContent = css;
+  // Append style to head.
+  headEl.appendChild(styleEl);
+  return styleEl;
+}
 
-  // Generate a unique name for this animation
-  var name = 'animation-' + id();
+function animateCurveViaCss(el, points, mapper, prefixes, fps) {
+  fps = fps || 60;
 
   // Compute the timespan of the animation based on the number of frames we
   // have and the fps we desire.
   var duration = (points.length / fps) * 1000;
 
-  // Create CSS animation classname
+  // Generate a unique name for this animation.
+  var name = 'animation-' + id();
+
+  // Create CSS animation classname.
   var css = generateAnimationCss(points, name, duration + 'ms', mapper, prefixes);
 
-  // Create a new style element.
-  var styleEl = document.createElement('style');
-  // Assign it the id.
-  styleEl.id = name;
-  // Assign the text content.
-  styleEl.textContent = css;
-  // Append style to head.
-  document.head.appendChild(styleEl);
+  // Create style element and append it to head element.
+  var styleEl = appendStyle(document.head, css);
 
   // Add animation classname to element.
   el.classList.add(name);
