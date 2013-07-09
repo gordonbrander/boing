@@ -14,6 +14,10 @@ function roundTo(number, decimals) {
 	return Math.round(number * d) / d;
 }
 
+function id() {
+  return Math.random().toString(16).substring(2, 10);
+}
+
 function dampenedHookeForce(displacement, stiffness, damping, velocity) {
   //
   // @TODO look at proper Verlet integration.
@@ -116,6 +120,10 @@ function asCssStatement(identifier, cssString, prefixes) {
   }, '');
 }
 
+function prependAtSymbol(string) {
+  return '@' + string;
+}
+
 function generateCssKeyframes(points, name, mapper, prefixes) {
   // Create a hardware-accelarated CSS Keyframe animation from a series of points,
   // an animation name and a mapper function that returns a CSS string for
@@ -125,28 +133,24 @@ function generateCssKeyframes(points, name, mapper, prefixes) {
   var frameSize = 100 / (points.length - 1);
 
   // Build keyframe string
-  return reduce(points, function(frames, point, i) {
+  var keyframes = reduce(points, function(frames, point, i) {
     // Create the percentage key for the frame. Round to nearest 5 decimals.
     var percent = roundTo(frameSize * i, 5);
     // Wrap the mapped point value in a keyframe. Mapper is expected to return
     // a valid set of CSS properties as a string.
     return frames + asCssStatement(percent + '%', mapper(point));
   }, '');
+
+  prefixes = prefixes.map(prependAtSymbol);
+
+  return asCssStatement('keyframes ' + name + ' ', keyframes, prefixes);
 }
 
-function generateAnimationCss(points, name, mapper, prefixes, fps) {
-  fps = fps || 60;
-
-  // Compute the timespan of the animation based on the number of frames we
-  // have and the fps we desire.
-  var ms = (points.length / fps) * 1000;
-
-  var keyframes = generateCssKeyframes(points, name, mapper, prefixes);
-
-  var keyframeStatement = asCssStatement('keyframes ' + name + ' ', keyframes, prefixes);
+function generateAnimationCss(points, name, duration, mapper, prefixes) {
+  var keyframeStatement = generateCssKeyframes(points, name, mapper, prefixes);
 
   var properties = [
-    rule('animation-duration', ms + 'ms', prefixes),
+    rule('animation-duration', duration, prefixes),
     rule('animation-name', name, prefixes),
     rule('animation-timing-function', 'linear', prefixes),
     rule('animation-fill-mode', 'both', prefixes)
@@ -155,6 +159,38 @@ function generateAnimationCss(points, name, mapper, prefixes, fps) {
   var animationStatement = asCssStatement('.' + name, properties);
 
   return keyframeStatement + animationStatement;
+}
+
+function animateCurveViaCss(document, el, points, mapper, prefixes, fps) {
+  fps = fps || 60;
+
+  // Generate a unique name for this animation
+  var name = 'animation-' + id();
+
+  // Compute the timespan of the animation based on the number of frames we
+  // have and the fps we desire.
+  var duration = (points.length / fps) * 1000;
+
+  // Create CSS animation classname
+  var css = generateAnimationCss(points, name, duration + 'ms', mapper, prefixes);
+
+  // Create a new style element.
+  var styleEl = document.createElement('style');
+  // Assign it the id.
+  styleEl.id = name;
+  // Assign the text content.
+  styleEl.textContent = css;
+  // Append style to head.
+  document.head.appendChild(styleEl);
+
+  // Add animation classname to element.
+  el.classList.add(name);
+
+  setTimeout(function () {
+    // Remove animation classname and styles.
+    document.head.removeChild(styleEl);
+    el.classList.remove(name);
+  }, duration + 1);
 }
 
 function animateSpring(spring, callback) {
