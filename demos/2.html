@@ -21,7 +21,6 @@
     }
     #springy {
       background: dodgerblue;
-      left: 0;
       position: absolute;
       width: 40px;
       height: 100px;
@@ -30,7 +29,7 @@
 </head>
 <body id="stage">
   <div id="bar">
-    <div id="springy"></div>
+    <div id="springy" style="left: 0;"></div>
   </div> 
   <script type="text/javascript" src="../spring.js"></script>
   <script type="text/javascript">
@@ -42,7 +41,7 @@
       return rule('left', (((320 / 2) - 20) - point) + 'px');
     }
 
-    animateCurveViaCss(document, springyEl, points, myAnimate, ['-moz-', '']);
+    animateSpringViaCss(springyEl, points, myAnimate, ['']);
   </script>
 </body>
 </html>

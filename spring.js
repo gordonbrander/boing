@@ -179,7 +179,7 @@ function appendStyle(headEl, css) {
   return styleEl;
 }
 
-function animateCurveViaCss(el, points, mapper, prefixes, fps) {
+function animateSpringViaCss(el, points, mapper, prefixes, fps) {
   fps = fps || 60;
 
   // Compute the timespan of the animation based on the number of frames we
@@ -187,7 +187,7 @@ function animateCurveViaCss(el, points, mapper, prefixes, fps) {
   var duration = (points.length / fps) * 1000;
 
   // Generate a unique name for this animation.
-  var name = 'animation-' + id();
+  var name = 'spring-' + id();
 
   // Create CSS animation classname.
   var css = generateAnimationCss(points, name, duration + 'ms', mapper, prefixes);
@@ -198,9 +198,12 @@ function animateCurveViaCss(el, points, mapper, prefixes, fps) {
   // Add animation classname to element.
   el.classList.add(name);
 
-  setTimeout(function () {
-    // Remove animation classname and styles.
+  setTimeout(function cleanupAnimation() {
+    // Append final style to element.
+    el.style.cssText += mapper(0);
+    // Remove animation classname and styles. We're done with it.
     document.head.removeChild(styleEl);
+    // Remove classname appended to element.
     el.classList.remove(name);
   }, duration + 1);
 }
