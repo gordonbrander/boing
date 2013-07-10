@@ -121,7 +121,7 @@ function prependAtSymbol(string) {
   return '@' + string;
 }
 
-function generateCssKeyframes(points, name, mapper, prefixes) {
+function generateAnimationCss(points, name, duration, mapper, prefixes) {
   // Create a hardware-accelarated CSS Keyframe animation from a series of points,
   // an animation name and a mapper function that returns a CSS string for
   // a given point distance.
@@ -138,22 +138,25 @@ function generateCssKeyframes(points, name, mapper, prefixes) {
     return frames + asCssStatement(percent + '%', mapper(point));
   }, '');
 
-  prefixes = prefixes.map(prependAtSymbol);
+  // Prepend the @ to our prefixes (keyframes -> @-moz-keyframes, @keyframes)
+  var atPrefixes = prefixes.map(prependAtSymbol);
 
-  return asCssStatement('keyframes ' + name + ' ', keyframes, prefixes);
-}
+  // Wrap keyframe string into @keyframes statement. Give animation a name
+  // so we can reference it.
+  var keyframeStatement = asCssStatement('keyframes ' + name + ' ', keyframes, atPrefixes);
 
-function generateAnimationCss(points, name, duration, mapper, prefixes) {
-  var keyframeStatement = generateCssKeyframes(points, name, mapper, prefixes);
-
+  // Build properties string for our animation classname.
   var properties = 
     asCssRule('animation-duration', duration, prefixes) +
     asCssRule('animation-name', name, prefixes) +
     asCssRule('animation-timing-function', 'linear', prefixes) +
     asCssRule('animation-fill-mode', 'both', prefixes);
 
+  // Wrap properties string as a CSS class statement. Give class same name
+  // as animation.
   var animationStatement = asCssStatement('.' + name, properties);
 
+  // Return our combined animation rule set string.
   return keyframeStatement + animationStatement;
 }
 
