@@ -11,7 +11,7 @@ var reduce = Array.reduce;
 function roundTo(number, decimals) {
   // Round a number to a given number of decimal places.
   var d = Math.pow(10, decimals);
-	return Math.round(number * d) / d;
+  return Math.round(number * d) / d;
 }
 
 function id() {
