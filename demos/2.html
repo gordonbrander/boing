@@ -36,7 +36,7 @@
     var springyEl = document.getElementById('springy');
 
     function myAnimate(point) {
-      return asCssRule('left', (((320 / 2) - 20) - point) + 'px');
+      return 'left: ' + (((320 / 2) - 20) - point) + 'px;';
     }
 
     animateSpringViaCss(springyEl, (320/2), 0, 50, 700, 10, myAnimate);
